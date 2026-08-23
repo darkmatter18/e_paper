@@ -3,6 +3,8 @@
 import logging
 from contextlib import asynccontextmanager
 
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 from fastapi import FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -20,6 +22,29 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 # Get settings
 settings = get_settings()
+
+# Password hasher
+ph = PasswordHasher()
+
+
+def verify_password(password: str, password_hash: str) -> bool:
+    """Verify password against Argon2 hash.
+
+    Args:
+        password: Plain text password to verify
+        password_hash: Argon2 hash from AUTH_PASSWORD
+
+    Returns:
+        True if password matches, False otherwise
+    """
+    try:
+        ph.verify(password_hash, password)
+        return True
+    except VerifyMismatchError:
+        return False
+    except Exception as e:
+        logger.error(f"Password verification error: {e}")
+        return False
 
 
 def check_auth(request: Request) -> bool:
@@ -141,8 +166,8 @@ def create_app() -> FastAPI:
             request.session["authenticated"] = True
             return RedirectResponse(url="/", status_code=302)
 
-        # Check password
-        if password == settings.auth.password:
+        # Verify password against Argon2 hash
+        if verify_password(password, settings.auth.password):
             request.session["authenticated"] = True
             return RedirectResponse(url="/", status_code=302)
 

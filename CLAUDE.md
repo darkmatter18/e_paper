@@ -14,6 +14,10 @@ E-paper display for Waveshare 7.5" B/V2 (800x480, black/white/red) running on Ra
 # Install dependencies
 uv sync
 
+# Generate password hash (optional - for authentication)
+uv run python generate_password_hash.py
+# Copy the generated hash to AUTH_PASSWORD in .env
+
 # Run API server (default mode - with screen switching)
 uv run python main.py
 # API runs on http://localhost:8000
@@ -90,9 +94,11 @@ Create `.env` file from `.env.example`:
 - `API_PORT`: API server port (default: 8000)
 
 **Authentication (optional):**
-- `AUTH_PASSWORD`: Password for web UI and API access (no username, password-only)
+- `AUTH_PASSWORD`: Argon2 password hash for web UI and API access (no username, password-only)
+  - Generate with: `uv run python generate_password_hash.py`
+  - The hash starts with `$argon2id$` and is stored securely (one-way hash)
+  - Leave empty to disable authentication
 - `SECRET_KEY`: Secret key for signing session cookies (change in production)
-- Leave `AUTH_PASSWORD` empty to disable authentication
 
 **Weather Settings:**
 - `OPENWEATHER_API_KEY`: OpenWeatherMap API key (required for weather widgets)
@@ -295,9 +301,11 @@ process/
 **API Server (api/app.py):**
 - `create_app()`: FastAPI application factory with lifespan management
 - Authentication:
-  - Session-based auth using SessionMiddleware
+  - Session-based auth using SessionMiddleware with itsdangerous
+  - Argon2 password hashing for secure password storage
+  - `verify_password(password, hash)`: Verify password against Argon2 hash
   - `check_auth(request)`: Check if request is authenticated
-  - Password-only (no username), configurable via AUTH_PASSWORD
+  - Password-only (no username), configured via AUTH_PASSWORD (Argon2 hash)
   - Auth can be disabled by leaving AUTH_PASSWORD empty
 - Endpoints:
   - `GET /`: Web UI control panel (protected)
@@ -583,6 +591,7 @@ e-paper/
 ├── main.py                          # Entry point: FastAPI server + display engine
 ├── main_standalone.py               # Entry point: Standalone display (no API)
 ├── test_api.py                      # API tests with mocked hardware
+├── generate_password_hash.py        # Generate Argon2 password hash for AUTH_PASSWORD
 ├── fonts.py                         # Centralized font path constants
 ├── pyproject.toml                   # Project dependencies (uv)
 ├── .env                             # Environment configuration

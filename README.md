@@ -19,11 +19,32 @@ Edit `.env` and add:
 - `OPENWEATHER_API_KEY`: Get from [OpenWeatherMap](https://openweathermap.org/api)
 - `LATITUDE` and `LONGITUDE`: Your location coordinates
 
+3. (Optional) Set up authentication:
+
+```bash
+uv run python generate_password_hash.py
+```
+
+This will prompt you to enter a password and generate an Argon2 hash. Copy the generated hash and add it to `.env`:
+
+```
+AUTH_PASSWORD="$argon2id$v=19$m=65536,t=3,p=4$..."
+```
+
+Leave `AUTH_PASSWORD` empty to disable authentication.
+
 ## Run project
 
 ```bash
 uv run python -m main
 ```
+
+The API server starts on `http://localhost:8000`
+
+- **Web UI**: Open `http://localhost:8000` in your browser to control the display
+- **API**: Use REST endpoints to control the display programmatically
+
+If authentication is enabled, you'll be redirected to the login page.
 
 ## Run as background service
 
