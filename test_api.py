@@ -4,8 +4,12 @@ This script tests the API endpoints without actually starting the display engine
 Useful for verifying API structure before deployment to Raspberry Pi.
 """
 
+import os
 from dotenv import load_dotenv
 from fastapi.testclient import TestClient
+
+# Disable auth for testing by setting empty password
+os.environ["AUTH_PASSWORD"] = ""
 
 load_dotenv()
 

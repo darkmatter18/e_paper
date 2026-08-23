@@ -137,6 +137,25 @@ class APISettings(BaseSettings):
     )
 
 
+class AuthSettings(BaseSettings):
+    """Authentication settings for web UI and API."""
+
+    password: str = Field(
+        default="",
+        description="Password for accessing web UI and API (no username, password-only)",
+    )
+    secret_key: str = Field(
+        default="changeme-insecure-default-key",
+        description="Secret key for signing session cookies (change in production)",
+    )
+
+    model_config = SettingsConfigDict(
+        env_prefix="AUTH_",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
+
 class Settings(BaseSettings):
     """Main application settings.
 
@@ -170,6 +189,7 @@ class Settings(BaseSettings):
     timezone: TimezoneSettings = Field(default_factory=TimezoneSettings)
     logging: LoggingSettings = Field(default_factory=LoggingSettings)
     api: APISettings = Field(default_factory=APISettings)
+    auth: AuthSettings = Field(default_factory=AuthSettings)
 
     model_config = SettingsConfigDict(
         case_sensitive=False,

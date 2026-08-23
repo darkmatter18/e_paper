@@ -51,16 +51,27 @@ curl -X PUT http://localhost:8000/api/v1/screen \
 
 **Base URL:** `http://localhost:8000` (configurable via `API_HOST`, `API_PORT`)
 
+**Authentication:**
+- Password-only authentication (no username)
+- Set `AUTH_PASSWORD` in `.env` to enable
+- Leave empty to disable authentication
+- Web UI: Login page at `/login`
+- API: Session-based (cookie authentication)
+
 **Endpoints:**
-- `GET /` - API info & available screens
-- `GET /health` - Health check (engine status, current screen)
-- `PUT /api/v1/screen` - Switch screen
+- `GET /` - Web UI control panel (requires auth)
+- `GET /login` - Login page
+- `POST /login` - Handle login (form: password)
+- `GET /logout` - Logout and clear session
+- `GET /health` - Health check (engine status, current screen, requires auth)
+- `PUT /api/v1/screen` - Switch screen (requires auth)
   ```json
   {"screen": "datetime_weather_forecast"}  // or "todays_weather"
   ```
 
 **Available Screens:**
 - `datetime_weather_forecast` - 4-widget dashboard (clock, date, weather, quote)
+- `digital_clock` - Full-screen minimal digital clock with status bar
 - `todays_weather` - Full-screen weather with hourly forecast graph
 
 **Example:**
@@ -73,8 +84,17 @@ curl -X PUT http://localhost:8000/api/v1/screen \
 ## Environment Configuration
 
 Create `.env` file from `.env.example`:
+
+**API Settings:**
 - `API_HOST`: API server bind address (default: 0.0.0.0)
 - `API_PORT`: API server port (default: 8000)
+
+**Authentication (optional):**
+- `AUTH_PASSWORD`: Password for web UI and API access (no username, password-only)
+- `SECRET_KEY`: Secret key for signing session cookies (change in production)
+- Leave `AUTH_PASSWORD` empty to disable authentication
+
+**Weather Settings:**
 - `OPENWEATHER_API_KEY`: OpenWeatherMap API key (required for weather widgets)
 - `LATITUDE` / `LONGITUDE`: Location coordinates (required for weather)
 
@@ -274,11 +294,20 @@ process/
 
 **API Server (api/app.py):**
 - `create_app()`: FastAPI application factory with lifespan management
+- Authentication:
+  - Session-based auth using SessionMiddleware
+  - `check_auth(request)`: Check if request is authenticated
+  - Password-only (no username), configurable via AUTH_PASSWORD
+  - Auth can be disabled by leaving AUTH_PASSWORD empty
 - Endpoints:
-  - `GET /`: API info and available screens
-  - `GET /health`: Health check with engine status
-  - `PUT /api/v1/screen`: Switch screen (with duplicate detection)
+  - `GET /`: Web UI control panel (protected)
+  - `GET /login`: Login page
+  - `POST /login`: Handle login form submission
+  - `GET /logout`: Logout and clear session
+  - `GET /health`: Health check with engine status (protected)
+  - `PUT /api/v1/screen`: Switch screen (protected, with duplicate detection)
 - Lifespan: Starts/stops EngineProcessManager on startup/shutdown
+- Templates: Uses Jinja2Templates for rendering HTML UI (login.html, index.html)
 
 **Display Controller (display/display_controller.py):**
 
@@ -339,10 +368,12 @@ while True:
 - Centralized configuration with Pydantic BaseSettings
 - `BASE_DIR`: Project root path
 - `FONTS_DIR`: Fonts directory path
+- `TEMPLATES_DIR`: Templates directory path
 - `DisplaySettings`: Width, height, full_refresh_interval
 - `TimezoneSettings`: Name, UTC offset
 - `WeatherSettings`: API key, location
 - `APISettings`: Host, port (default: 0.0.0.0:8000)
+- `AuthSettings`: Password, secret_key (session signing)
 
 ## Adding New Features
 
@@ -553,14 +584,19 @@ e-paper/
 ├── main_standalone.py               # Entry point: Standalone display (no API)
 ├── test_api.py                      # API tests with mocked hardware
 ├── fonts.py                         # Centralized font path constants
+├── pyproject.toml                   # Project dependencies (uv)
 ├── .env                             # Environment configuration
 ├── .env.example                     # Environment template
-├── epaper.service             # Systemd service file
+├── epaper.service                   # Systemd service file
 ├── CLAUDE.md                        # This file
 │
 ├── api/                             # FastAPI REST API
 │   ├── __init__.py
-│   └── app.py                       # Application factory, endpoints, lifespan
+│   └── app.py                       # Application factory, endpoints, lifespan, auth
+│
+├── templates/                       # Jinja2 HTML templates
+│   ├── index.html                   # Web UI control panel
+│   └── login.html                   # Login page
 │
 ├── display/                         # Display engine (process isolation)
 │   ├── __init__.py                  # Exports Display class
