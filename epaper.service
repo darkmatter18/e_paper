@@ -1,10 +1,10 @@
 [Unit]
-Description=E-Paper Clock
+Description=E-Paper
 After=network.target
 
 [Service]
-WorkingDirectory=/home/arkadip/e-paper
-ExecStart=/home/arkadip/e-paper/.venv/bin/python -m main
+WorkingDirectory=/home/arkadip/e_paper
+ExecStart=/home/arkadip/e_paper/.venv/bin/python -m main
 Restart=on-failure
 RestartSec=5
 User=arkadip
