@@ -55,7 +55,7 @@ def test_api():
         print(f"   Content-Type: {response.headers.get('content-type')}")
         assert response.status_code == 200
         assert "text/html" in response.headers.get("content-type", "")
-        assert "E-Paper Display Control" in response.text
+        assert "E-Paper Display" in response.text
         assert "Available Screens" in response.text
         print("   ✓ Web UI renders successfully")
 

@@ -32,14 +32,26 @@
 
         h1 {
             color: #333;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             font-size: 28px;
         }
 
         .subtitle {
             color: #666;
-            margin-bottom: 30px;
             font-size: 14px;
+            margin: 0;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+
+        .header-title {
+            display: flex;
+            flex-direction: column;
         }
 
         .status-card {
@@ -143,27 +155,27 @@
             font-size: 20px;
         }
 
-        .refresh-button {
-            width: 100%;
-            background: #667eea;
-            color: white;
+        .refresh-icon {
+            background: transparent;
             border: none;
-            border-radius: 12px;
-            padding: 14px 24px;
-            font-size: 16px;
-            font-weight: 600;
+            color: #667eea;
+            font-size: 20px;
             cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
             transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .refresh-button:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        .refresh-icon:hover {
+            background: #f0f0f0;
+            transform: rotate(180deg);
         }
 
-        .refresh-button:active {
-            transform: translateY(0);
+        .refresh-icon:active {
+            transform: rotate(180deg) scale(0.95);
         }
 
         .message {
@@ -210,8 +222,15 @@
 </head>
 <body>
     <div class="container">
-        <h1>🖥️ E-Paper Display</h1>
-        <p class="subtitle">Control the display remotely</p>
+        <div class="header-row">
+            <div class="header-title">
+                <h1>🖥️ E-Paper Display</h1>
+                <p class="subtitle">Control the display remotely</p>
+            </div>
+            <button class="refresh-icon" onclick="refreshStatus()" title="Refresh status">
+                🔄
+            </button>
+        </div>
 
         <div class="status-card">
             <div class="status-row">
@@ -245,11 +264,7 @@
             </div>
         </div>
 
-        <button class="refresh-button" onclick="refreshStatus()">
-            🔄 Refresh Status
-        </button>
-
-        <a href="/logout" style="display: block; margin-top: 15px; text-align: center; color: #667eea; text-decoration: none; font-size: 14px;">
+        <a href="/logout" style="display: block; margin-top: 20px; text-align: center; color: #667eea; text-decoration: none; font-size: 14px;">
             Logout
         </a>
 
