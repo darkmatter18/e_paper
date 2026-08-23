@@ -44,14 +44,16 @@ def test_api():
 
         client = TestClient(app)
 
-        # Test 1: Root endpoint
-        print("\n1. Testing GET /")
+        # Test 1: Root endpoint (Web UI)
+        print("\n1. Testing GET / (Web UI)")
         response = client.get("/")
         print(f"   Status: {response.status_code}")
-        print(f"   Response: {response.json()}")
+        print(f"   Content-Type: {response.headers.get('content-type')}")
         assert response.status_code == 200
-        assert "available_screens" in response.json()
-        print("   ✓ Root endpoint works")
+        assert "text/html" in response.headers.get("content-type", "")
+        assert "E-Paper Display Control" in response.text
+        assert "Available Screens" in response.text
+        print("   ✓ Web UI renders successfully")
 
         # Test 2: Health endpoint
         print("\n2. Testing GET /health")
@@ -97,23 +99,25 @@ def test_api():
 
         # Test 6: Available screens
         print("\n6. Checking available screens")
-        response = client.get("/")
-        screens = response.json()["available_screens"]
+        from screens import AVAILABLE_SCREENS
+        screens = list(AVAILABLE_SCREENS.keys())
         print(f"   Available: {screens}")
         assert "datetime_weather_forecast" in screens
         assert "todays_weather" in screens
+        assert "digital_clock" in screens
         print("   ✓ All screens registered")
 
     print("\n" + "=" * 60)
     print("✅ All API tests passed!")
     print("\nAPI Endpoints:")
-    print("  GET  /              - API info & available screens")
-    print("  GET  /health        - Health check")
-    print("  PUT  /api/v1/screen - Switch screen")
-    print("\nExample:")
-    print('  curl -X PUT http://localhost:8000/api/v1/screen \\')
-    print('       -H "Content-Type: application/json" \\')
-    print('       -d \'{"screen": "todays_weather"}\'')
+    print("  GET  /              - Web UI control panel")
+    print("  GET  /health        - Health check (JSON)")
+    print("  PUT  /api/v1/screen - Switch screen (JSON)")
+    print("\nUsage:")
+    print("  Web UI: Open http://localhost:8000 in your browser")
+    print("  API:    curl -X PUT http://localhost:8000/api/v1/screen \\")
+    print('               -H "Content-Type: application/json" \\')
+    print('               -d \'{"screen": "todays_weather"}\'')
     print("=" * 60)
 
 

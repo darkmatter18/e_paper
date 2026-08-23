@@ -17,6 +17,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Fonts directory
 FONTS_DIR = BASE_DIR / "fonts"
 
+# Templates directory
+TEMPLATES_DIR = BASE_DIR / "templates"
+
 
 class DisplaySettings(BaseSettings):
     """E-paper display hardware settings.

@@ -2,14 +2,22 @@
 
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
 from process import EngineProcessManager
 from screens import AVAILABLE_SCREENS, DEFAULT_SCREEN
+from settings import TEMPLATES_DIR
 
 logger = logging.getLogger(__name__)
+
+# Configure templates directory
+
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
 class ScreenSwitchRequest(BaseModel):
@@ -73,14 +81,19 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    @app.get("/", response_model=InfoResponse)
-    def root():
-        """Get API information."""
-        return InfoResponse(
-            name="E-Paper Display API",
-            version="1.0.0",
-            available_screens=list(AVAILABLE_SCREENS.keys()),
-            current_screen=app.state.current_screen,
+    @app.get("/", response_class=HTMLResponse)
+    def root(request: Request):
+        """Render web UI control panel."""
+        manager: EngineProcessManager = app.state.engine_manager
+        return templates.TemplateResponse(
+            request=request,
+            name="index.html",
+            context={
+                "health_status": "healthy",
+                "engine_running": manager.is_alive(),
+                "current_screen": app.state.current_screen,
+                "available_screens": list(AVAILABLE_SCREENS.keys()),
+            },
         )
 
     @app.get("/health", response_model=HealthResponse)
