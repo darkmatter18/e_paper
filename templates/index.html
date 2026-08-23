@@ -248,9 +248,7 @@
                         </span>
                         {{ screen.replace('_', ' ').title() }}
                     </span>
-                    {% if screen == current_screen %}
-                    <span>✓</span>
-                    {% endif %}
+                    <span class="checkmark" style="{% if screen != current_screen %}display: none;{% endif %}">✓</span>
                 </button>
                 {% endfor %}
             </div>
@@ -322,13 +320,16 @@
                 document.getElementById('engine-status').textContent = data.engine_running ? 'Running' : 'Stopped';
                 document.getElementById('current-screen').textContent = data.current_screen || 'unknown';
 
-                // Update active button
+                // Update active button and checkmark
                 const buttons = document.querySelectorAll('.screen-button');
                 buttons.forEach(btn => {
+                    const checkmark = btn.querySelector('.checkmark');
                     if (btn.dataset.screen === data.current_screen) {
                         btn.classList.add('active');
+                        if (checkmark) checkmark.style.display = 'inline';
                     } else {
                         btn.classList.remove('active');
+                        if (checkmark) checkmark.style.display = 'none';
                     }
                 });
 
