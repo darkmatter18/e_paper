@@ -224,10 +224,6 @@
                     {{ "Running" if engine_running else "Stopped" }}
                 </span>
             </div>
-            <div class="status-row">
-                <span class="status-label">Current Screen</span>
-                <span class="status-value" id="current-screen">{{ current_screen }}</span>
-            </div>
         </div>
 
         <div class="screens-section">
@@ -270,8 +266,9 @@
         async function switchScreen(screenName) {
             if (isLoading) return;
 
-            const currentScreen = document.getElementById('current-screen').textContent;
-            if (screenName === currentScreen) {
+            // Check if this screen is already active
+            const activeButton = document.querySelector('.screen-button.active');
+            if (activeButton && activeButton.dataset.screen === screenName) {
                 showMessage('Already on ' + screenName, 'success');
                 return;
             }
@@ -313,7 +310,6 @@
                 // Update status display
                 document.getElementById('health-status').textContent = data.status || 'healthy';
                 document.getElementById('engine-status').textContent = data.engine_running ? 'Running' : 'Stopped';
-                document.getElementById('current-screen').textContent = data.current_screen || 'unknown';
 
                 // Update active button and checkmark
                 const buttons = document.querySelectorAll('.screen-button');
@@ -327,8 +323,6 @@
                         if (checkmark) checkmark.style.display = 'none';
                     }
                 });
-
-                showMessage('Status refreshed!', 'success');
             } catch (error) {
                 showMessage('Failed to refresh status: ' + error.message, 'error');
             }
