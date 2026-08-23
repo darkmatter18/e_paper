@@ -233,22 +233,17 @@
         <div class="screens-section">
             <h2>Available Screens</h2>
             <div class="screen-grid">
-                {% for screen in available_screens %}
+                {% for screen in screens %}
                 <button
-                    class="screen-button {% if screen == current_screen %}active{% endif %}"
-                    onclick="switchScreen('{{ screen }}')"
-                    data-screen="{{ screen }}"
+                    class="screen-button {% if screen.key == current_screen %}active{% endif %}"
+                    onclick="switchScreen('{{ screen.key }}')"
+                    data-screen="{{ screen.key }}"
                 >
                     <span>
-                        <span class="screen-icon">
-                            {% if screen == "digital_clock" %}⏰
-                            {% elif screen == "datetime_weather_forecast" %}📊
-                            {% elif screen == "todays_weather" %}🌤️
-                            {% else %}📺{% endif %}
-                        </span>
-                        {{ screen.replace('_', ' ').title() }}
+                        <span class="screen-icon">{{ screen.icon }}</span>
+                        {{ screen.display_name }}
                     </span>
-                    <span class="checkmark" style="{% if screen != current_screen %}display: none;{% endif %}">✓</span>
+                    <span class="checkmark" style="{% if screen.key != current_screen %}display: none;{% endif %}">✓</span>
                 </button>
                 {% endfor %}
             </div>

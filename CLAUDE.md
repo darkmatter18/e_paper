@@ -257,23 +257,32 @@ from services.weather import WeatherData, WeatherService, OpenWeatherMapService
 
 **Screen Architecture:**
 
-Screens are collections of widgets with a name:
+Screens are collections of widgets with metadata for UI display:
 
 ```python
-@dataclass
 class Screen:
-    name: str
-    widgets: list[Widget]
+    key: str                # Unique identifier (used in API)
+    name: str               # Human-readable name
+    display_name: str       # Display name for UI
+    icon: str               # Emoji icon for UI display
+    widgets: list[Widget]   # Ordered list of widgets
     
     def get_partial_refresh_widgets(self) -> list[Widget]
     def get_all_widgets(self) -> list[Widget]
+    def has_partial_refresh_widgets(self) -> bool
 ```
 
 **Screen Registry:**
 - Located in `screens/` directory
 - Each screen defined in its own file: `<name>_screen.py`
-- `screens/__init__.py` exports `AVAILABLE_SCREENS` dict and `get_screen()` function
-- Add new screens by creating screen file and adding to registry
+- `screens/__init__.py`:
+  - `_SCREENS`: List of Screen instances (single source of truth)
+  - `AVAILABLE_SCREENS`: Dict mapping key -> Screen instance
+  - `get_screen(key)`: Returns cached Screen instance by key
+  - `get_screens()`: Returns list of all Screen instances
+- Screens are singletons - created once at module load, reused everywhere
+- Screen metadata (icon, display_name) dynamically rendered in web UI
+- Add new screens by creating factory function and calling it in `_SCREENS` list
 
 **Process Management:**
 
@@ -389,9 +398,32 @@ while True:
 1. Create `screens/<name>_screen.py`
 2. Define factory function `create_<name>_screen() -> Screen`
 3. Instantiate widgets with their regions
-4. Return `Screen(name="<name>", widgets=[...])`
-5. Add to `AVAILABLE_SCREENS` dict in `screens/__init__.py`
-6. Test via API: `curl -X PUT http://localhost:8000/api/v1/screen -d '{"screen": "<name>"}'`
+4. Return `Screen` with metadata:
+
+   ```python
+   return Screen(
+       key="screen_key",           # Unique identifier (used in API)
+       name="Screen Name",          # Human-readable name
+       display_name="Display Name", # UI display name
+       icon="🎨",                   # Emoji icon for UI
+       widgets=[...],               # List of widget instances
+   )
+   ```
+
+5. Import and instantiate in `screens/__init__.py`:
+
+   ```python
+   from screens.my_screen import create_my_screen
+   
+   _SCREENS: list[Screen] = [
+       create_digital_clock_screen(),
+       create_my_screen(),  # Add your screen here
+       # ...
+   ]
+   ```
+
+6. `AVAILABLE_SCREENS` dict is auto-generated from `_SCREENS` list
+7. Test via API: `curl -X PUT http://localhost:8000/api/v1/screen -d '{"screen": "screen_key"}'`
 
 **Screen Guidelines:**
 - Full-screen widgets: Use region `WidgetRegion(0, 0, 800, 480)`
@@ -488,8 +520,12 @@ All modules, classes, methods, and functions are documented with comprehensive G
 **Screen Modules:**
 - `screens/<name>_screen.py`: Screen factory functions
   - Widget instantiation with regions
-  - Returns Screen dataclass
-- `screens/__init__.py`: Screen registry and get_screen()
+  - Returns Screen instance with metadata (key, name, display_name, icon, widgets)
+- `screens/__init__.py`: Screen registry (singleton pattern)
+  - `_SCREENS` list: Pre-instantiated Screen objects (created at module load)
+  - `AVAILABLE_SCREENS` dict: Auto-generated key -> Screen instance mapping
+  - `get_screen(key)`: Returns cached Screen instance
+  - `get_screens()`: Returns list of Screen instances
 
 **Widget Modules:**
 - `widgets/widget.py`: Base Widget class and WidgetRegion dataclass
@@ -644,7 +680,7 @@ e-paper/
 ├── utils/                           # Utilities
 │   ├── __init__.py
 │   ├── datetime_util.py             # Timezone-aware datetime
-│   ├── screen.py                    # Screen dataclass
+│   ├── screen.py                    # Screen class (with metadata: key, name, icon, etc.)
 │   ├── log.py                       # Logging configuration
 │   └── partial_state_manager.py     # Partial refresh state tracking
 │

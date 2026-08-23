@@ -18,21 +18,37 @@ class Screen:
     - Easy widget queries (all widgets, partial-refresh widgets, etc.)
 
     Attributes:
+        key (str): Unique identifier for this screen (used in API and registry).
+        name (str): Human-readable name for this screen.
+        display_name (str): Display name for UI (falls back to name if not provided).
+        icon (str): Emoji or icon character for UI display.
         widgets (list[Widget]): Ordered list of widgets in this screen.
                                Widgets are rendered in list order.
-        name (str): Optional name identifier for this screen.
     """
 
-    def __init__(self, widgets: list[Widget], name: str = "default"):
-        """Initialize screen with a list of widgets.
+    def __init__(
+        self,
+        key: str,
+        name: str,
+        widgets: list[Widget],
+        display_name: str | None = None,
+        icon: str = "📺",
+    ):
+        """Initialize screen with metadata and widgets.
 
         Args:
+            key: Unique identifier for this screen (used in API/registry).
+            name: Human-readable name for this screen.
             widgets: List of Widget instances to display on this screen.
                     Order determines rendering order.
-            name: Optional identifier for this screen (default: "default").
+            display_name: Display name for UI (defaults to name if not provided).
+            icon: Emoji or icon character for UI display (default: "📺").
         """
-        self.widgets = widgets
+        self.key = key
         self.name = name
+        self.display_name = display_name or name
+        self.icon = icon
+        self.widgets = widgets
 
     def get_all_widgets(self) -> list[Widget]:
         """Get all widgets in this screen.

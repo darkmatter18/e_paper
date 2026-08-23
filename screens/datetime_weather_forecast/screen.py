@@ -39,6 +39,10 @@ def create_datetime_weather_forecast_screen() -> Screen:
         Screen instance with status bar, clock, date, weather, and quote widgets.
     """
     return Screen(
+        key="datetime_weather_forecast",
+        name="Datetime Weather Forecast",
+        display_name="Weather Dashboard",
+        icon="📊",
         widgets=[
             # Status bar: y=0, height=32 (aligned)
             StatusBarWidget(WidgetRegion(x=0, y=0, width=800, height=32)),
@@ -51,5 +55,4 @@ def create_datetime_weather_forecast_screen() -> Screen:
             DateWidget(WidgetRegion(x=0, y=256, width=400, height=224)),
             QuoteWidget(WidgetRegion(x=400, y=256, width=400, height=224)),
         ],
-        name="Datetime Weather Forecast",
     )

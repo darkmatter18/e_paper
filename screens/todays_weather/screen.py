@@ -48,8 +48,11 @@ def create_todays_weather_screen() -> Screen:
         Screen instance with TodaysWeatherWidget (full screen).
     """
     return Screen(
+        key="todays_weather",
+        name="Today's Weather",
+        display_name="Today's Weather",
+        icon="🌤️",
         widgets=[
             TodaysWeatherWidget(),
         ],
-        name="Today's Weather",
     )

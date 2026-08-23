@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 
 from process import EngineProcessManager
-from screens import AVAILABLE_SCREENS, DEFAULT_SCREEN
+from screens import AVAILABLE_SCREENS, DEFAULT_SCREEN, get_screens
 from settings import TEMPLATES_DIR, get_settings
 
 logger = logging.getLogger(__name__)
@@ -42,7 +42,7 @@ def verify_password(password: str, password_hash: str) -> bool:
         return True
     except VerifyMismatchError:
         return False
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error(f"Password verification error: {e}")
         return False
 
@@ -192,6 +192,8 @@ def create_app() -> FastAPI:
             return RedirectResponse(url="/login", status_code=302)
 
         manager: EngineProcessManager = app.state.engine_manager
+        screens = get_screens()
+
         return templates.TemplateResponse(
             request=request,
             name="index.html",
@@ -199,7 +201,7 @@ def create_app() -> FastAPI:
                 "health_status": "healthy",
                 "engine_running": manager.is_alive(),
                 "current_screen": app.state.current_screen,
-                "available_screens": list(AVAILABLE_SCREENS.keys()),
+                "screens": screens,
             },
         )
 

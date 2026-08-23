@@ -1,13 +1,12 @@
 """Digital clock screen - large centered time display."""
 
 from screens.digital_clock.widgets import (
-    AmPmWidget,
     ColonWidget,
     HoursWidget,
     MinutesWidget,
 )
 from utils.screen import Screen
-from widgets import GuideWidget, StatusBarWidget, WidgetRegion
+from widgets import StatusBarWidget, WidgetRegion
 
 
 def create_digital_clock_screen() -> Screen:
@@ -25,7 +24,10 @@ def create_digital_clock_screen() -> Screen:
         Screen with status bar and 4 time component widgets.
     """
     return Screen(
+        key="digital_clock",
         name="Digital Clock",
+        display_name="Digital Clock",
+        icon="⏰",
         widgets=[
             # Status bar at top
             StatusBarWidget(WidgetRegion(x=0, y=0, width=800, height=30)),
