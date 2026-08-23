@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-E-paper display clock for Waveshare 7.5" B/V2 (800x480, black/white/red) running on Raspberry Pi. Features multiple screen layouts controlled via REST API, with widgets including analog clock, date, weather forecast, and quote of the day.
+E-paper display for Waveshare 7.5" B/V2 (800x480, black/white/red) running on Raspberry Pi. Features multiple screen layouts controlled via REST API, with widgets including analog clock, date, weather forecast, and quote of the day.
 
 **Architecture:** FastAPI server with isolated display engine process, allowing dynamic screen switching without interrupting the rendering loop.
 
@@ -25,14 +25,14 @@ uv run python main_standalone.py
 python test_api.py
 
 # Deploy as systemd service (production on Raspberry Pi)
-sudo cp epaper-clock.service /etc/systemd/system/
+sudo cp epaper.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable epaper-clock
-sudo systemctl start epaper-clock
+sudo systemctl enable epaper
+sudo systemctl start epaper
 
 # Monitor service
-sudo systemctl status epaper-clock
-journalctl -u epaper-clock -f
+sudo systemctl status epaper
+journalctl -u epaper -f
 
 # API Usage Examples
 # List available screens
@@ -400,7 +400,7 @@ while True:
 - Communication: `multiprocessing.Queue` for commands
 
 **Systemd Service:**
-- Service file: `epaper-clock.service`
+- Service file: `epaper.service`
 - Service user: `arkadip`
 - Working directory: `/home/arkadip/e-paper`
 - Virtual environment: `/home/arkadip/e-paper/.venv`
@@ -536,10 +536,10 @@ All modules, classes, methods, and functions are documented with comprehensive G
 **Monitoring:**
 ```bash
 # Watch logs
-journalctl -u epaper-clock -f
+journalctl -u epaper -f
 
 # Check process status
-systemctl status epaper-clock
+systemctl status epaper
 
 # View API status
 curl http://localhost:8000/health
@@ -555,7 +555,7 @@ e-paper/
 ├── fonts.py                         # Centralized font path constants
 ├── .env                             # Environment configuration
 ├── .env.example                     # Environment template
-├── epaper-clock.service             # Systemd service file
+├── epaper.service             # Systemd service file
 ├── CLAUDE.md                        # This file
 │
 ├── api/                             # FastAPI REST API

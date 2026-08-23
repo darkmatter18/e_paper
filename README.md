@@ -30,21 +30,21 @@ uv run python -m main
 Copy the systemd unit file and enable it:
 
 ```bash
-sudo cp epaper-clock.service /etc/systemd/system/
+sudo cp epaper.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable epaper-clock
-sudo systemctl start epaper-clock
+sudo systemctl enable epaper
+sudo systemctl start epaper
 ```
 
 Check status / logs:
 
 ```bash
-sudo systemctl status epaper-clock
-journalctl -u epaper-clock -f
+sudo systemctl status epaper
+journalctl -u epaper -f
 ```
 
 Stop the service:
 
 ```bash
-sudo systemctl stop epaper-clock
+sudo systemctl stop epaper
 ```
