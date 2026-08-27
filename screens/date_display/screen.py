@@ -3,7 +3,6 @@
 from screens.date_display.widgets import DateDisplayWidget
 from utils.screen import Screen
 from widgets.base.widget import WidgetRegion
-from widgets.shared.guide_widget import GuideWidget
 from widgets.shared.status_bar_widget import StatusBarWidget
 
 
@@ -27,6 +26,5 @@ def create_date_display_screen() -> Screen:
         widgets=[
             StatusBarWidget(WidgetRegion(x=0, y=0, width=800, height=30)),
             DateDisplayWidget(),
-            GuideWidget(WidgetRegion(x=0, y=0, width=800, height=480))
         ],
     )
