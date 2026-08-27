@@ -10,15 +10,16 @@ from widgets.base import Widget, WidgetRegion
 class CompactDateWidget(Widget):
     """Compact date display for use with clock.
 
-    Shows date in two lines:
-    - Line 1: Day of week, Day number (e.g., "WEDNESDAY, 27")
-    - Line 2: Month Year (e.g., "AUGUST 2026")
+    Shows date in a single line with two colors:
+    - Format: "WEDNESDAY, 27 AUGUST 2026"
+    - Day number (27) in red
+    - Rest in black (day of week, month, year)
 
     Layout:
     ┌────────────────────────────────────────┐
     │                                        │
-    │         WEDNESDAY, 27                  │
-    │          AUGUST 2026                   │
+    │      WEDNESDAY, 27 AUGUST 2026         │
+    │                  (red)                 │
     │                                        │
     └────────────────────────────────────────┘
 
@@ -50,7 +51,7 @@ class CompactDateWidget(Widget):
 
         Args:
             black_draw: PIL ImageDraw for black channel
-            red_draw: PIL ImageDraw for red channel (unused)
+            red_draw: PIL ImageDraw for red channel (day number)
             **kwargs: Additional arguments (unused)
         """
         now = DateTimeUtil.now()
@@ -61,30 +62,59 @@ class CompactDateWidget(Widget):
         month = now.strftime("%B").upper()  # AUGUST
         year = now.strftime("%Y")  # 2026
 
+        # Font
+        font = ImageFont.truetype(str(FONT_GEOMINI), 48)
+        font.set_variation_by_axes([700])  # Bold
+
+        # Build text parts
+        part1 = f"{day_of_week}, "  # Black
+        part2 = day_number  # Red
+        part3 = f" {month} {year}"  # Black
+
+        # Calculate total width to center the entire line
+        bbox1 = black_draw.textbbox((0, 0), part1, font=font)
+        width1 = bbox1[2] - bbox1[0]
+
+        bbox2 = black_draw.textbbox((0, 0), part2, font=font)
+        width2 = bbox2[2] - bbox2[0]
+
+        bbox3 = black_draw.textbbox((0, 0), part3, font=font)
+        width3 = bbox3[2] - bbox3[0]
+
+        total_width = width1 + width2 + width3
+
         # Center coordinates
         center_x = self.region.x + self.region.width // 2
         center_y = self.region.y + self.region.height // 2
 
-        # Line 1: Day of week, day number
-        day_text = f"{day_of_week}, {day_number}"
-        day_font = ImageFont.truetype(str(FONT_GEOMINI), 56)
-        day_font.set_variation_by_axes([700])  # Bold
+        # Starting x position (left edge of centered text)
+        start_x = center_x - total_width // 2
+
+        # Draw each part
+        # Part 1: Day of week (black)
         black_draw.text(
-            (center_x, center_y - 40),
-            day_text,
-            font=day_font,
+            (start_x, center_y),
+            part1,
+            font=font,
             fill=0,
-            anchor="mm",
+            anchor="lm",
         )
 
-        # Line 2: Month and year
-        month_year_text = f"{month} {year}"
-        month_font = ImageFont.truetype(str(FONT_GEOMINI), 44)
-        month_font.set_variation_by_axes([600])  # Semibold
+        # Part 2: Day number (red)
+        if red_draw:
+            red_draw.text(
+                (start_x + width1, center_y),
+                part2,
+                font=font,
+                fill=0,
+                anchor="lm",
+            )
+
+        # Part 3: Month and year (black)
         black_draw.text(
-            (center_x, center_y + 40),
-            month_year_text,
-            font=month_font,
+            (start_x + width1 + width2, center_y),
+            part3,
+            font=font,
             fill=0,
-            anchor="mm",
+            anchor="lm",
         )
