@@ -2,6 +2,7 @@ from screens.date_display import create_date_display_screen
 from screens.datetime_display import create_datetime_display_screen
 from screens.datetime_weather_forecast import create_datetime_weather_forecast_screen
 from screens.digital_clock import create_digital_clock_screen
+from screens.peaceful_garden import create_peaceful_garden_screen
 from screens.todays_weather import create_todays_weather_screen
 from screens.zen_garden import create_zen_garden_screen
 from utils.screen import Screen
@@ -14,13 +15,14 @@ _SCREENS: list[Screen] = [
     create_datetime_weather_forecast_screen(),
     create_todays_weather_screen(),
     create_zen_garden_screen(),
+    create_peaceful_garden_screen(),
 ]
 
 # Screen registry - maps screen keys to Screen instances
 AVAILABLE_SCREENS: dict[str, Screen] = {screen.key: screen for screen in _SCREENS}
 
 # Default screen key
-DEFAULT_SCREEN = "zen_garden"
+DEFAULT_SCREEN = "peaceful_garden"
 
 
 def get_screen(key: str) -> Screen:
