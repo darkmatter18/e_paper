@@ -33,7 +33,7 @@ class DateDisplayWidget(Widget):
     def __init__(self):
         """Initialize date display widget with full screen region."""
         super().__init__(WidgetRegion(x=0, y=0, width=800, height=480))
-        self._supports_partial_refresh = True
+        self._supports_partial_refresh = False
 
     @property
     def supports_partial_refresh(self) -> bool:
