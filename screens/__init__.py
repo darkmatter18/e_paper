@@ -1,3 +1,4 @@
+from screens.date_display import create_date_display_screen
 from screens.datetime_weather_forecast import create_datetime_weather_forecast_screen
 from screens.digital_clock import create_digital_clock_screen
 from screens.todays_weather import create_todays_weather_screen
@@ -6,6 +7,7 @@ from utils.screen import Screen
 # List of all available screens (single source of truth)
 _SCREENS: list[Screen] = [
     create_digital_clock_screen(),
+    create_date_display_screen(),
     create_datetime_weather_forecast_screen(),
     create_todays_weather_screen(),
 ]
@@ -14,7 +16,7 @@ _SCREENS: list[Screen] = [
 AVAILABLE_SCREENS: dict[str, Screen] = {screen.key: screen for screen in _SCREENS}
 
 # Default screen key
-DEFAULT_SCREEN = "digital_clock"
+DEFAULT_SCREEN = "date_display"
 
 
 def get_screen(key: str) -> Screen:
