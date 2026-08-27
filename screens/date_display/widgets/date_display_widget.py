@@ -43,7 +43,7 @@ class DateDisplayWidget(Widget):
     def draw(
         self,
         black_draw: ImageDraw.ImageDraw,
-        red_draw: ImageDraw.ImageDraw | None = None,
+        red_draw: ImageDraw.ImageDraw,
         **kwargs,
     ):
         """Draw the date display.
@@ -69,7 +69,7 @@ class DateDisplayWidget(Widget):
         day_font = ImageFont.truetype(str(FONT_GEOMINI), 48)
         day_font.set_variation_by_axes([700])  # Bold
         black_draw.text(
-            (center_x, center_y - 120),
+            (center_x, center_y - 140),
             day_of_week,
             font=day_font,
             fill=0,
@@ -79,30 +79,20 @@ class DateDisplayWidget(Widget):
         # Day number (center, red if available)
         day_num_font = ImageFont.truetype(str(FONT_ORBITRON), 220)
         day_num_font.set_variation_by_axes([900])  # Black weight
-        if red_draw:
-            red_draw.text(
-                (center_x, center_y + 10),
-                day_number,
-                font=day_num_font,
-                fill=0,
-                anchor="mm",
-            )
-        else:
-            # Fallback to black if no red channel
-            black_draw.text(
-                (center_x, center_y + 10),
-                day_number,
-                font=day_num_font,
-                fill=0,
-                anchor="mm",
-            )
+        red_draw.text(
+            (center_x, center_y - 10),
+            day_number,
+            font=day_num_font,
+            fill=0,
+            anchor="mm",
+        )
 
         # Month and year (bottom)
         month_year_text = f"{month} {year}"
         month_font = ImageFont.truetype(str(FONT_GEOMINI), 42)
         month_font.set_variation_by_axes([600])  # Semibold
         black_draw.text(
-            (center_x, center_y + 150),
+            (center_x, center_y + 130),
             month_year_text,
             font=month_font,
             fill=0,

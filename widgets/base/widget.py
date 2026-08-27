@@ -77,7 +77,7 @@ class Widget(ABC):
         self.region = region
 
     @abstractmethod
-    def draw(self, black_draw: ImageDraw.ImageDraw, red_draw: ImageDraw.ImageDraw | None = None, **kwargs):
+    def draw(self, black_draw: ImageDraw.ImageDraw, red_draw: ImageDraw.ImageDraw, **kwargs):
         """Draw the widget content.
 
         This is the main rendering method called during both full and partial refresh.
