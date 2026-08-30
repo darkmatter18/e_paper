@@ -1,8 +1,43 @@
 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Minimalist third eye / vision symbol -->
-  <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="1.5" fill="none"/>
-  <ellipse cx="16" cy="16" rx="8" ry="11" stroke="currentColor" stroke-width="1.5" fill="none"/>
-  <circle cx="16" cy="16" r="3" fill="currentColor"/>
-  <!-- Subtle top arc (like a tilak) -->
-  <path d="M 16 5 Q 13 8, 16 9 Q 19 8, 16 5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <defs>
+    <!-- Simplified purple gradient matching Darshan's UI colors -->
+    <linearGradient id="darshan-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#667eea" />
+      <stop offset="100%" stop-color="#764ba2" />
+    </linearGradient>
+  </defs>
+
+  <!-- Outer circle frame -->
+  <circle cx="16" cy="16" r="13" stroke="url(#darshan-gradient)" stroke-width="1.5" fill="none"/>
+
+  <!-- Center petal (top) -->
+  <path d="M 16 6 C 17 9, 17 13, 16 15 C 15 13, 15 9, 16 6 Z"
+        fill="url(#darshan-gradient)" opacity="0.9"/>
+
+  <!-- Top-left petal -->
+  <path d="M 16 15 C 14 12, 11 10, 9 11 C 11 12, 14 13.5, 16 15 Z"
+        fill="url(#darshan-gradient)" opacity="0.8"/>
+
+  <!-- Top-right petal -->
+  <path d="M 16 15 C 18 12, 21 10, 23 11 C 21 12, 18 13.5, 16 15 Z"
+        fill="url(#darshan-gradient)" opacity="0.8"/>
+
+  <!-- Left petal -->
+  <path d="M 16 15 C 12 15, 8 14, 7 16 C 8.5 16.5, 12 16, 16 16 Z"
+        fill="url(#darshan-gradient)" opacity="0.75"/>
+
+  <!-- Right petal -->
+  <path d="M 16 15 C 20 15, 24 14, 25 16 C 23.5 16.5, 20 16, 16 16 Z"
+        fill="url(#darshan-gradient)" opacity="0.75"/>
+
+  <!-- Bottom-left petal -->
+  <path d="M 16 16 C 13 17, 10 19, 10 21 C 11 19, 14 17, 16 16 Z"
+        fill="url(#darshan-gradient)" opacity="0.7"/>
+
+  <!-- Bottom-right petal -->
+  <path d="M 16 16 C 19 17, 22 19, 22 21 C 21 19, 18 17, 16 16 Z"
+        fill="url(#darshan-gradient)" opacity="0.7"/>
+
+  <!-- Center circle (bindu) -->
+  <circle cx="16" cy="15.5" r="2.5" fill="url(#darshan-gradient)"/>
 </svg>
