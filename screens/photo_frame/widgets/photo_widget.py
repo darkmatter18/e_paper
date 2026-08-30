@@ -1,9 +1,8 @@
 """Photo widget - displays dithered image."""
 
-from pathlib import Path
-
 from PIL import Image, ImageDraw
 
+from settings.settings import PHOTOS_DIR
 from utils.image import dither_to_bwr
 from widgets.base import Widget, WidgetRegion
 
@@ -34,20 +33,15 @@ class PhotoWidget(Widget):
     def __init__(
         self,
         region: WidgetRegion,
-        image_path: str | Path,
-        use_red_channel: bool = True,
     ):
         """Initialize photo widget.
 
         Args:
             region: Widget region for positioning and sizing
-            image_path: Path to image file
-            use_red_channel: Use 3-color dithering (black/white/red) vs 2-color (black/white)
         """
         super().__init__(region)
         self._supports_partial_refresh = False
-        self.image_path = Path(image_path)
-        self.use_red_channel = use_red_channel
+        self.image_path = PHOTOS_DIR / "image.jpg"
 
         # Validate image path
         if not self.image_path.exists():
@@ -61,7 +55,7 @@ class PhotoWidget(Widget):
     def draw(
         self,
         black_draw: ImageDraw.ImageDraw,
-        red_draw: ImageDraw.ImageDraw | None = None,
+        red_draw: ImageDraw.ImageDraw,
         **kwargs,
     ):
         """Draw dithered photo.
@@ -74,28 +68,14 @@ class PhotoWidget(Widget):
         # Load source image
         source_image = Image.open(self.image_path)
 
-        if self.use_red_channel and red_draw:
-            # Dither to black/white/red (3 colors)
-            black_img, red_img = dither_to_bwr(
-                source_image,
-                self.region.width,
-                self.region.height,
-            )
+        # Dither to black/white/red (3 colors)
+        black_img, red_img = dither_to_bwr(
+            source_image,
+            self.region.width,
+            self.region.height,
+        )
 
-            # Paste dithered images onto the draw contexts
-            # Note: paste requires the actual image, not the draw context
-            black_draw._image.paste(black_img, (self.region.x, self.region.y))
-            red_draw._image.paste(red_img, (self.region.x, self.region.y))
-
-        else:
-            # Dither to black/white only (2 colors)
-            from utils.image import dither_to_bw
-
-            bw_img = dither_to_bw(
-                source_image,
-                self.region.width,
-                self.region.height,
-            )
-
-            # Paste onto black channel only
-            black_draw._image.paste(bw_img, (self.region.x, self.region.y))
+        # Paste dithered images onto the draw contexts
+        # Note: paste requires the actual image, not the draw context
+        black_draw._image.paste(black_img, (self.region.x, self.region.y))
+        red_draw._image.paste(red_img, (self.region.x, self.region.y))
