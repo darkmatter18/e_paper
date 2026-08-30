@@ -3,19 +3,19 @@
 import logging
 import shutil
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 
 from process import EngineProcessManager
 from screens import AVAILABLE_SCREENS, DEFAULT_SCREEN, get_screens
-from settings import PHOTOS_DIR, TEMPLATES_DIR, get_settings
+from settings import BASE_DIR, PHOTOS_DIR, TEMPLATES_DIR, get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -159,8 +159,8 @@ def create_app() -> FastAPI:
         Configured FastAPI app instance
     """
     app = FastAPI(
-        title="E-Paper Display API",
-        description="Control e-paper display screens via REST API",
+        title="Darshan API",
+        description="A sacred glimpse - Control display screens via REST API",
         version="1.0.0",
         lifespan=lifespan,
     )
@@ -172,6 +172,11 @@ def create_app() -> FastAPI:
         session_cookie="epaper_session",
         max_age=86400,  # 24 hours
     )
+
+    # Mount static files directory
+    static_dir = BASE_DIR / "static"
+    if static_dir.exists():
+        app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
     @app.get("/login", response_class=HTMLResponse)
     def login_page(request: Request):

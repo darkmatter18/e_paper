@@ -1,4 +1,8 @@
-# E Paper
+# Darshan (दर्शन)
+
+> *A sacred glimpse*
+
+E-paper display system for Waveshare 7.5" B/V2 (800x480, black/white/red) running on Raspberry Pi. Display time, weather, photos, and peaceful imagery with contemplative design.
 
 ## Setup
 
