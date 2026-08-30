@@ -102,14 +102,108 @@
             color: #0c5460;
         }
 
-        .screens-section {
+        .mode-selector {
+            display: flex;
+            gap: 8px;
             margin-bottom: 30px;
+            background: #f8f9fa;
+            padding: 6px;
+            border-radius: 12px;
         }
 
-        .screens-section h2 {
+        .mode-button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .mode-button:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .mode-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .photo-section, .screens-section {
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .photo-section.active, .screens-section.active {
+            display: block;
+        }
+
+        .photo-section h2, .screens-section h2 {
             color: #333;
             margin-bottom: 15px;
             font-size: 20px;
+        }
+
+        .photo-preview {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .photo-preview img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .upload-area {
+            background: white;
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f8f9ff;
+        }
+
+        .upload-area.dragging {
+            border-color: #764ba2;
+            background: #f0f0ff;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .upload-subtext {
+            color: #999;
+            font-size: 14px;
+        }
+
+        #fileInput {
+            display: none;
         }
 
         .screen-grid {
@@ -245,10 +339,34 @@
             </div>
         </div>
 
-        <div class="screens-section">
+        <div class="mode-selector">
+            <button class="mode-button {% if current_mode == 'photo' %}active{% endif %}" onclick="setMode('photo')" data-mode="photo">
+                🖼️ Photo Mode
+            </button>
+            <button class="mode-button {% if current_mode == 'screen' %}active{% endif %}" onclick="setMode('screen')" data-mode="screen">
+                📱 Screen Mode
+            </button>
+        </div>
+
+        <div class="photo-section {% if current_mode == 'photo' %}active{% endif %}">
+            <h2>Current Photo</h2>
+            <div class="photo-preview">
+                <img id="photoPreview" src="/api/v1/current-photo?t={{ range(1000000000) | random }}" alt="Current photo">
+            </div>
+
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()" id="uploadArea">
+                <div class="upload-icon">📤</div>
+                <div class="upload-text">Click to upload or drag and drop</div>
+                <div class="upload-subtext">JPEG, PNG, GIF, etc.</div>
+            </div>
+            <input type="file" id="fileInput" accept="image/*" onchange="uploadPhoto(this.files[0])">
+        </div>
+
+        <div class="screens-section {% if current_mode == 'screen' %}active{% endif %}">
             <h2>Available Screens</h2>
             <div class="screen-grid">
                 {% for screen in screens %}
+                {% if screen.key != 'photo_frame' %}
                 <button
                     class="screen-button {% if screen.key == current_screen %}active{% endif %}"
                     onclick="switchScreen('{{ screen.key }}')"
@@ -260,6 +378,7 @@
                     </span>
                     <span class="checkmark" style="{% if screen.key != current_screen %}display: none;{% endif %}">✓</span>
                 </button>
+                {% endif %}
                 {% endfor %}
             </div>
         </div>
@@ -277,6 +396,139 @@
 
     <script>
         let isLoading = false;
+        let currentMode = '{{ current_mode }}';
+
+        // Drag and drop support
+        const uploadArea = document.getElementById('uploadArea');
+        if (uploadArea) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, () => uploadArea.classList.add('dragging'), false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, () => uploadArea.classList.remove('dragging'), false);
+            });
+
+            uploadArea.addEventListener('drop', handleDrop, false);
+        }
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function handleDrop(e) {
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                uploadPhoto(files[0]);
+            }
+        }
+
+        async function setMode(mode) {
+            if (isLoading) return;
+            if (currentMode === mode) {
+                showMessage(`Already in ${mode} mode`, 'success');
+                return;
+            }
+
+            isLoading = true;
+            const buttons = document.querySelectorAll('.mode-button');
+            buttons.forEach(btn => btn.style.opacity = '0.6');
+
+            try {
+                const response = await fetch('/api/v1/mode', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ mode: mode })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentMode = mode;
+
+                    // Update mode buttons
+                    buttons.forEach(btn => {
+                        if (btn.dataset.mode === mode) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    });
+
+                    // Show/hide sections
+                    document.querySelector('.photo-section').classList.toggle('active', mode === 'photo');
+                    document.querySelector('.screens-section').classList.toggle('active', mode === 'screen');
+
+                    // Refresh photo preview if switching to photo mode
+                    if (mode === 'photo') {
+                        refreshPhotoPreview();
+                    }
+
+                    showMessage(data.message || `Switched to ${mode} mode`, 'success');
+                    await refreshStatus();
+                } else {
+                    showMessage(data.detail || 'Failed to switch mode', 'error');
+                }
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+            } finally {
+                isLoading = false;
+                buttons.forEach(btn => btn.style.opacity = '1');
+            }
+        }
+
+        async function uploadPhoto(file) {
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                showMessage('Please upload an image file', 'error');
+                return;
+            }
+
+            isLoading = true;
+            const uploadArea = document.getElementById('uploadArea');
+            uploadArea.style.opacity = '0.6';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch('/api/v1/upload-photo', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(data.message || 'Photo uploaded successfully!', 'success');
+
+                    // Refresh photo preview
+                    setTimeout(() => refreshPhotoPreview(), 500);
+                } else {
+                    showMessage(data.detail || 'Failed to upload photo', 'error');
+                }
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+            } finally {
+                isLoading = false;
+                uploadArea.style.opacity = '1';
+            }
+        }
+
+        function refreshPhotoPreview() {
+            const photoPreview = document.getElementById('photoPreview');
+            if (photoPreview) {
+                // Add timestamp to bypass cache
+                photoPreview.src = `/api/v1/current-photo?t=${Date.now()}`;
+            }
+        }
 
         async function switchScreen(screenName) {
             if (isLoading) return;
@@ -326,7 +578,7 @@
                 document.getElementById('health-status').textContent = data.status || 'healthy';
                 document.getElementById('engine-status').textContent = data.engine_running ? 'Running' : 'Stopped';
 
-                // Update active button and checkmark
+                // Update active button and checkmark (only if in screen mode)
                 const buttons = document.querySelectorAll('.screen-button');
                 buttons.forEach(btn => {
                     const checkmark = btn.querySelector('.checkmark');
