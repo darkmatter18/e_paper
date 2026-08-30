@@ -24,7 +24,7 @@ _SCREENS: list[Screen] = [
 AVAILABLE_SCREENS: dict[str, Screen] = {screen.key: screen for screen in _SCREENS}
 
 # Default screen key
-DEFAULT_SCREEN = "peaceful_garden"
+DEFAULT_SCREEN = "photo_frame"
 
 
 def get_screen(key: str) -> Screen:
