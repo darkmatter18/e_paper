@@ -20,6 +20,9 @@ FONTS_DIR = BASE_DIR / "fonts"
 # Templates directory
 TEMPLATES_DIR = BASE_DIR / "templates"
 
+# Photo directory for images
+PHOTOS_DIR = BASE_DIR / "photo"
+
 
 class DisplaySettings(BaseSettings):
     """E-paper display hardware settings.
