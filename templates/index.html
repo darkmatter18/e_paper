@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Darshan</title>
     <link rel="icon" type="image/svg+xml" href="/static/darshan-icon.svg">
+    <!-- Cropper.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
     <style>
         * {
             margin: 0;
@@ -207,6 +209,122 @@
             display: none;
         }
 
+        /* Crop Modal Styles */
+        .crop-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .crop-modal.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .crop-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .crop-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .crop-header h2 {
+            margin: 0;
+            color: #333;
+        }
+
+        .crop-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .crop-close:hover {
+            background: #f0f0f0;
+        }
+
+        .crop-image-container {
+            max-width: 800px;
+            max-height: 60vh;
+            overflow: hidden;
+        }
+
+        .crop-image-container img {
+            max-width: 100%;
+            display: block;
+        }
+
+        .crop-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .crop-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .crop-button.cancel {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .crop-button.cancel:hover {
+            background: #d0d0d0;
+        }
+
+        .crop-button.upload {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .crop-button.upload:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .crop-info {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+
         .screen-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -398,9 +516,37 @@
         </div>
     </div>
 
+    <!-- Crop Modal -->
+    <div class="crop-modal" id="cropModal">
+        <div class="crop-container">
+            <div class="crop-header">
+                <h2>Crop Image (16:9)</h2>
+                <button class="crop-close" onclick="closeCropModal()">×</button>
+            </div>
+
+            <div class="crop-info">
+                Drag to position your image. The crop area is locked to 16:9 ratio (800x450 pixels).
+            </div>
+
+            <div class="crop-image-container">
+                <img id="cropImage" src="" alt="Image to crop">
+            </div>
+
+            <div class="crop-actions">
+                <button class="crop-button cancel" onclick="closeCropModal()">Cancel</button>
+                <button class="crop-button upload" onclick="cropAndUpload()">Crop & Upload</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cropper.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
     <script>
         let isLoading = false;
         let currentMode = '{{ current_mode }}';
+        let cropper = null;
+        let selectedFile = null;
 
         // Drag and drop support
         const uploadArea = document.getElementById('uploadArea');
@@ -428,7 +574,103 @@
         function handleDrop(e) {
             const files = e.dataTransfer.files;
             if (files.length > 0) {
-                uploadPhoto(files[0]);
+                openCropModal(files[0]);
+            }
+        }
+
+        // Open crop modal with selected image
+        function openCropModal(file) {
+            if (!file.type.startsWith('image/')) {
+                showMessage('Please select an image file', 'error');
+                return;
+            }
+
+            selectedFile = file;
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const image = document.getElementById('cropImage');
+                image.src = e.target.result;
+
+                // Show modal
+                document.getElementById('cropModal').classList.add('active');
+
+                // Initialize cropper with 16:9 aspect ratio
+                if (cropper) {
+                    cropper.destroy();
+                }
+
+                cropper = new Cropper(image, {
+                    aspectRatio: 16 / 9,  // 16:9 ratio
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 1,
+                    restore: false,
+                    guides: true,
+                    center: true,
+                    highlight: false,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
+                });
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        // Close crop modal
+        function closeCropModal() {
+            document.getElementById('cropModal').classList.remove('active');
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+            selectedFile = null;
+        }
+
+        // Crop and upload the image
+        async function cropAndUpload() {
+            if (!cropper) return;
+
+            isLoading = true;
+
+            try {
+                // Get cropped canvas with 800x450 dimensions (16:9)
+                const canvas = cropper.getCroppedCanvas({
+                    width: 800,
+                    height: 450,
+                    imageSmoothingEnabled: true,
+                    imageSmoothingQuality: 'high',
+                });
+
+                // Convert canvas to blob
+                canvas.toBlob(async function(blob) {
+                    const formData = new FormData();
+                    formData.append('file', blob, selectedFile.name);
+
+                    const response = await fetch('/api/v1/upload-photo', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showMessage(data.message || 'Photo uploaded successfully!', 'success');
+                        closeCropModal();
+
+                        // Refresh photo preview
+                        setTimeout(() => refreshPhotoPreview(), 500);
+                    } else {
+                        showMessage(data.detail || 'Failed to upload photo', 'error');
+                    }
+
+                    isLoading = false;
+                }, 'image/jpeg', 0.95);
+
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+                isLoading = false;
             }
         }
 
@@ -488,42 +730,9 @@
             }
         }
 
-        async function uploadPhoto(file) {
-            if (!file) return;
-            if (!file.type.startsWith('image/')) {
-                showMessage('Please upload an image file', 'error');
-                return;
-            }
-
-            isLoading = true;
-            const uploadArea = document.getElementById('uploadArea');
-            uploadArea.style.opacity = '0.6';
-
-            try {
-                const formData = new FormData();
-                formData.append('file', file);
-
-                const response = await fetch('/api/v1/upload-photo', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    showMessage(data.message || 'Photo uploaded successfully!', 'success');
-
-                    // Refresh photo preview
-                    setTimeout(() => refreshPhotoPreview(), 500);
-                } else {
-                    showMessage(data.detail || 'Failed to upload photo', 'error');
-                }
-            } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
-            } finally {
-                isLoading = false;
-                uploadArea.style.opacity = '1';
-            }
+        // Modified to open crop modal instead of direct upload
+        function uploadPhoto(file) {
+            openCropModal(file);
         }
 
         function refreshPhotoPreview() {
